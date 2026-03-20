@@ -9,7 +9,7 @@ For evaluation, please prepare the following datasets.
 
 If you want to evaluate DAR with generated-image augmentation, please download the generated images:
 
-- [val_generated_images](https://drive.google.com/file/d/1ifR5q1ttOGxz-CXJ0ZR7cTsrh8FHLlbP/view)
+- [val_generated_images](https://drive.google.com/file/d/16enUJKzibsby05rcSBxyiC6jpPUruWf-/view?usp=sharing)
 
 
 ## Checkpoints
