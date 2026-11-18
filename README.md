@@ -1,49 +1,29 @@
-# Diffusion Augmented Retrieval: A Training-Free Approach to Interactive Text-to-Image Retrieval
+# Diffusion Augmented Retrieval (DAR)
 
-This repository is the official implementation of [Diffusion Augmented Retrieval: A Training-Free Approach to Interactive Text-to-Image Retrieval](https://dl.acm.org/doi/abs/10.1145/3726302.3729950), published as a full paper at SIGIR 2025.
+Official implementation of *Diffusion Augmented Retrieval: A Training-Free Approach to Interactive Text-to-Image Retrieval*, published at SIGIR 2025. Given successive turns of a dialogue, DAR combines a text-to-image retrieval score with a similarity score from a diffusion-generated query image. [Read the paper](https://doi.org/10.1145/3726302.3729950).
 
-## Dataset
-For evaluation, please prepare the following datasets.
-- [COCO 2017 Unlabeled images](https://cocodataset.org/#download)
-- [VisDial](https://visualdialog.org/data)
+## Prepare the evaluation
 
-If you want to evaluate DAR with generated-image augmentation, please download the generated images:
+| Input | Where it goes |
+| --- | --- |
+| [COCO 2017 unlabeled images](https://cocodataset.org/#download) | The candidate images must resolve at the paths recorded in [the 50k candidate list](ChatIR_Protocol/Search_Space_val_50k.json). |
+| [VisDial](https://visualdialog.org/data) queries | The validation [dialogue JSON](dialogues/VisDial_v1_0_queries_val.json) is included. Each target image path must match an entry in the candidate list. |
+| [ChatIR retrieval weights](https://github.com/levymsn/ChatIR) | Place the checkpoint at `chatir_weights.ckpt` in the repository root. [baselines.py](baselines.py) loads it into the bundled BLIP model. |
+| [Generated validation images](https://drive.google.com/file/d/16enUJKzibsby05rcSBxyiC6jpPUruWf-/view?usp=sharing) | Extract to `val_generated_images/`. Each dialogue needs 11 files named `<dialogue_index>_<round>.jpg` for rounds 0–10. |
 
-- [val_generated_images](https://drive.google.com/file/d/16enUJKzibsby05rcSBxyiC6jpPUruWf-/view?usp=sharing)
+## Compare text-only and augmented retrieval
 
-
-## Checkpoints
-Please download the weight of the [BLIP model](https://github.com/salesforce/BLIP) and the [ChatIR Checkpoints](https://github.com/levymsn/ChatIR?tab=readme-ov-file). 
-
-## Suggested Project Structure
-```text
-your_project/
-├── eval.py
-├── baselines.py
-├── chatir_weights.ckpt
-├── BLIP/
-│   ├── configs/
-│   ├── models/
-│   └── ...
-├── dialogues/
-│   └── VisDial_v1_0_queries_val.json
-├── ChatIR_Protocol/
-│   └── Search_Space_val_50k.json
-├── val_generated_images/
-│   ├── 0_0.jpg
-│   ├── 0_1.jpg
-│   ├── ...
-│   └── N_10.jpg
-└── temp/
-```
-
-## Evaluation
-
-All experiments can be run with `eval.py`.
+From the repository root, install PyTorch and its matching torchvision build for your device, then install the [BLIP dependencies](BLIP/requirements.txt) and run:
 
 ```bash
+python -m pip install -r BLIP/requirements.txt
+python -m pip install tqdm Pillow
 python eval.py
 ```
+
+[eval.py](eval.py) runs the text-only baseline first and the augmented method second. The complete command needs the generated validation images for the second pass. It prints cumulative Hits@10 across dialogue rounds. The augmented pass assigns the generated-image score a weight of 0.2 for rounds 0 and 1 and 0.5 thereafter.
+
+The evaluator saves corpus and generated-image embeddings under `temp/`. Use a fresh cache directory or separate cache filenames in `build_model` when changing the checkpoint, candidate list or generated images. The filenames do not encode those inputs.
 
 ## Citation
 
@@ -59,6 +39,6 @@ If you find this repository useful, please cite:
 }
 ```
 
-## Acknowledgement
+## Acknowledgments
 
-We thank the authors of BLIP and ChatIR for making their code publicly available.
+We thank the authors of [BLIP](https://github.com/salesforce/BLIP) and [ChatIR](https://github.com/levymsn/ChatIR) for releasing their retrieval models and code.
